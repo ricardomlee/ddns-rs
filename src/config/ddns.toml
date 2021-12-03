@@ -1,0 +1,13 @@
+[[ddns_config]]
+name = "test1.ricli.cf"
+interval = 30 # in sec
+api = "cloudflare"
+interface = "en0"
+type = "ipv4"
+
+[[ddns_config]]
+name = "test2.ricli.cf"
+interval = 30 # in sec
+api = "cloudflare"
+interface = "en0"
+type = "ipv4"
