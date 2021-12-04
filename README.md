@@ -14,11 +14,18 @@ cargo install --path .
 
 ## Usage
 
-update and copy config/ddns.toml to /tmp/ddns.toml
+update and copy `config/ddns.toml` to `/tmp/ddns.toml`
 
 ```shell
-ddns-rs
+CF_ZONE=<your zone id> CF_TOKEN=<your api token> ddns-rs
 ```
+
+## Features
+ - get public ip
+ - cloudflare (A record)
+ - toml config
+    - name
+    - interval
 
 
 ## TODO List
@@ -26,7 +33,9 @@ ddns-rs
  - get_ip
     - from interface
  - multiple records
-
+ - async functions
+ - more config
+ - more dns vendor
 
 
 ## Contributing
@@ -35,4 +44,4 @@ PRs accepted.
 
 ## License
 
-[MIT © Ric Li](../LICENSE)
+[MIT © ricardomlee](./LICENSE)
