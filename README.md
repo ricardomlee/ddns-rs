@@ -1,6 +1,6 @@
 # ddns-rs
 
-> not ready for use 🥵
+> ready for use with one cloudflare A record 🥰
 
 A ddns client written in Rust.
 
@@ -8,23 +8,25 @@ A ddns client written in Rust.
 ## Install
 
 ```shell
-cargo install ddns-rs
+cargo install --path .
+# cargo install ddns-rs
 ```
 
 ## Usage
 
-update config/ddns.toml
+update and copy config/ddns.toml to /tmp/ddns.toml
 
 ```shell
-./ddns-rs
+ddns-rs
 ```
 
 
 ## TODO List
- - cloudflare - not finished
+
  - get_ip
-    - from interface - not finished
-    - from net - not finished
+    - from interface
+ - multiple records
+
 
 
 ## Contributing
