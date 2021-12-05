@@ -38,8 +38,9 @@ ddns-rs
  - get ip
     - from interface
     - customizable api
+ - cache ip
  - multiple records
-    - multi-threads
+    - multi-thread
     - config iterator
     - token/id for each
  - async functions

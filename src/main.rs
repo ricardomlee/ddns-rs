@@ -23,21 +23,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     file.read_to_string(&mut str_val)?;
     let config: ConfVec = toml::from_str(&str_val).unwrap();
     let mut name = String::new();
+    let mut ip_type = String::from("ipv4");
     let mut interval: u64 = 300;
-    let mut ip_type = String::new();
     for x in config.ddns_config.unwrap() {
-        name = match x.name {
-            Some(s) => s,
-            None => return Err("parse error".into()),
-        };
-        interval = match x.interval {
-            Some(i) => i,
-            None => continue,
-        };
-        ip_type = match x.ip_type {
-            Some(t) => t,
-            None => return Err("parse error".into()),
-        }
+        name = x.name.unwrap();
+        ip_type = x.ip_type.unwrap_or_else(|| ip_type);
+        interval = x.interval.unwrap_or_else(|| interval);
     }
     let ip_api = String::from("ifconfig.me");
     println!(
