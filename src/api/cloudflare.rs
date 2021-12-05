@@ -28,7 +28,7 @@ impl Record {
     }
     pub fn run_checker(&mut self) -> Result<(), Box<dyn error::Error>> {
         println!("🚛 cf ddns task: {} {}", self.name, self.ip.unwrap());
-        let r = get_record(&self.name)?;
+        let r = self.get_record()?;
         if r.ip == None {
             println!("no remote record, create record...");
             self.create()?;
@@ -54,7 +54,7 @@ impl Record {
             zone_id, id
         );
         let body = Body {
-            r#type: String::from("A"),
+            r#type: get_record_type(&self.ip.unwrap()),
             name: self.name.clone(),
             content: self.ip.unwrap().to_string(),
             ttl: 1,
@@ -85,7 +85,7 @@ impl Record {
             zone_id
         );
         let body = Body {
-            r#type: String::from("A"),
+            r#type: get_record_type(&self.ip.unwrap()),
             name: self.name.clone(),
             content: self.ip.unwrap().to_string(),
             ttl: 1,
@@ -107,37 +107,49 @@ impl Record {
         println!("successfully created record");
         Ok(())
     }
+    fn get_record(&self) -> Result<Record, Box<dyn error::Error>> {
+        let zone_id = env::var("CF_ZONE")?;
+        let token = env::var("CF_TOKEN")?;
+        let url = format!(
+            "https://api.cloudflare.com/client/v4/zones/{}/dns_records?type={}&name={}",
+            zone_id,
+            get_record_type(&self.ip.unwrap()),
+            self.name
+        );
+        let client = reqwest::blocking::Client::new();
+        let resp: serde_json::Value = client
+            .get(&url)
+            .header("Authorization", format!("Bearer {}", token))
+            .header("Content-Type", "application/json")
+            .send()?
+            .json()?;
+        //dbg!(&resp);
+        if resp["success"] == false {
+            dbg!(&resp);
+            println!("{}", resp["errors"][0]["message"].to_string());
+            return Err("failed to query record".into());
+        };
+        let content = match resp["result"][0]["content"].as_str() {
+            Some(text) => text,
+            None => return Ok(Record::new(None, self.name.to_string(), None)),
+        };
+        let id = match resp["result"][0]["id"].as_str() {
+            Some(text) => text,
+            None => return Ok(Record::new(None, self.name.to_string(), None)),
+        };
+        println!("got record for {}, ip: {}", self.name, content);
+        let ip: IpAddr = content.parse()?;
+        let record = Record::new(Some(ip), self.name.to_string(), Some(id.to_string()));
+        Ok(record)
+    }
 }
 
-fn get_record(name: &String) -> Result<Record, Box<dyn error::Error>> {
-    let zone_id = env::var("CF_ZONE")?;
-    let token = env::var("CF_TOKEN")?;
-    let url = format!(
-        "https://api.cloudflare.com/client/v4/zones/{}/dns_records?type=A&name={}",
-        zone_id, name
-    );
-    let client = reqwest::blocking::Client::new();
-    let resp: serde_json::Value = client
-        .get(&url)
-        .header("Authorization", format!("Bearer {}", token))
-        .header("Content-Type", "application/json")
-        .send()?
-        .json()?;
-    if resp["success"] == false {
-        dbg!(&resp);
-        println!("{}", resp["errors"][0]["message"].to_string());
-        return Err("failed to query record".into());
-    };
-    let content = match resp["result"][0]["content"].as_str() {
-        Some(text) => text,
-        None => return Ok(Record::new(None, name.to_string(), None)),
-    };
-    let id = match resp["result"][0]["id"].as_str() {
-        Some(text) => text,
-        None => return Ok(Record::new(None, name.to_string(), None)),
-    };
-    println!("got record for {}, ip: {}", name, content);
-    let ip: IpAddr = content.parse()?;
-    let record = Record::new(Some(ip), name.to_string(), Some(id.to_string()));
-    Ok(record)
+fn get_record_type(ip: &IpAddr) -> String {
+    if ip.is_ipv4() {
+        String::from("A")
+    } else if ip.is_ipv6() {
+        String::from("AAAA")
+    } else {
+        panic!("invalid record type!")
+    }
 }

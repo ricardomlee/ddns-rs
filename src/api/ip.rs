@@ -21,8 +21,18 @@ pub fn get_ip_from_system(from: IpFrom) -> IpAddr {
     }
 }
 
-pub fn get_ip_from_net() -> Result<IpAddr, Box<dyn error::Error>> {
-    let resp =
-        reqwest::blocking::get("https://httpbin.org/ip")?.json::<HashMap<String, String>>()?;
-    Ok(IpAddr::from_str(resp.get("origin").unwrap())?)
+pub fn get_ip_from_net(ip_type: &String) -> Result<IpAddr, Box<dyn error::Error>> {
+    match ip_type as &str {
+        "ipv4" => {
+            let resp = reqwest::blocking::get("https://httpbin.org/ip")?
+                .json::<HashMap<String, String>>()?;
+            Ok(IpAddr::from_str(resp.get("origin").unwrap())?)
+        }
+        "ipv6" => {
+            let resp = reqwest::blocking::get("https://api6.ipify.org/?format=json")?
+                .json::<HashMap<String, String>>()?;
+            Ok(IpAddr::from_str(resp.get("ip").unwrap())?)
+        }
+        _ => Err("invalid ip type".into()),
+    }
 }

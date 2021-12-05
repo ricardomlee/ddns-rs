@@ -1,6 +1,6 @@
 [[ddns_config]]
 interval = 30 # in sec
-name = "test1.ricli.tech"
+name = "test6.ricli.tech"
 #api = "cloudflare"
 #interface = "en0"
-#type = "ipv4"
+ip_type = "ipv6"
