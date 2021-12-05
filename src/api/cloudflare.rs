@@ -107,6 +107,7 @@ impl Record {
         println!("successfully created record");
         Ok(())
     }
+
     fn get_record(&self) -> Result<Record, Box<dyn error::Error>> {
         let zone_id = env::var("CF_ZONE")?;
         let token = env::var("CF_TOKEN")?;
@@ -123,24 +124,21 @@ impl Record {
             .header("Content-Type", "application/json")
             .send()?
             .json()?;
-        //dbg!(&resp);
         if resp["success"] == false {
             dbg!(&resp);
             println!("{}", resp["errors"][0]["message"].to_string());
             return Err("failed to query record".into());
         };
-        let content = match resp["result"][0]["content"].as_str() {
-            Some(text) => text,
-            None => return Ok(Record::new(None, self.name.to_string(), None)),
+        let ip = match resp["result"][0]["content"].as_str() {
+            Some(c) => Some(c.parse()?),
+            None => None,
         };
         let id = match resp["result"][0]["id"].as_str() {
-            Some(text) => text,
-            None => return Ok(Record::new(None, self.name.to_string(), None)),
+            Some(i) => Some(i.to_string()),
+            None => None,
         };
-        println!("got record for {}, ip: {}", self.name, content);
-        let ip: IpAddr = content.parse()?;
-        let record = Record::new(Some(ip), self.name.to_string(), Some(id.to_string()));
-        Ok(record)
+        println!("got record for {}, ip: {}", self.name, ip.unwrap());
+        Ok(Record::new(ip, self.name.clone(), id))
     }
 }
 
