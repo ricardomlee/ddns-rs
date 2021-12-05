@@ -1,8 +1,17 @@
 # ddns-rs
 
-> ready for use with one cloudflare A record 🥰
+> ready for use with one cloudflare A/AAAA record 🥰
 
 A ddns client written in Rust.
+
+
+## Features
+ - get public ip
+ - cloudflare (A or AAAA record)
+ - toml config
+    - name: String
+    - interval: u64
+    - ip_type: String
 
 
 ## Install
@@ -12,35 +21,33 @@ cargo install --path .
 # cargo install ddns-rs
 ```
 
+
 ## Usage
 
 update and copy `config/ddns.toml` to `/tmp/ddns.toml`
 
 ```shell
-CF_ZONE=<your zone id> CF_TOKEN=<your api token> ddns-rs
+export CF_ZONE=<your zone id>
+export CF_TOKEN=<your api token>
+ddns-rs
 ```
-
-## Features
- - get public ip
- - cloudflare (A record)
- - toml config
-    - name
-    - interval
 
 
 ## TODO List
 
- - get_ip
+ - get ip
     - from interface
+    - customizable api
  - multiple records
+    - multi-threads
+    - config iterator
+    - token/id for each
  - async functions
- - more config
- - more dns vendor
+ - add dns vendors
+    - aliddns
+    - dnspod
+ - encrypted token/id
 
-
-## Contributing
-
-PRs accepted.
 
 ## License
 

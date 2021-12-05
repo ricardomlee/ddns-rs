@@ -4,13 +4,14 @@ use serde::Deserialize;
 use std::fs::File;
 use std::io::prelude::*;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 struct Config {
     name: Option<String>,
     interval: Option<u64>,
+    ip_type: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 struct ConfVec {
     ddns_config: Option<Vec<Config>>,
 }
@@ -23,6 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config: ConfVec = toml::from_str(&str_val).unwrap();
     let mut name = String::new();
     let mut interval: u64 = 300;
+    let mut ip_type = String::new();
     for x in config.ddns_config.unwrap() {
         name = match x.name {
             Some(s) => s,
@@ -32,6 +34,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Some(i) => i,
             None => continue,
         };
+        ip_type = match x.ip_type {
+            Some(t) => t,
+            None => return Err("parse error".into()),
+        }
     }
     let ip_api = String::from("ifconfig.me");
     println!(
@@ -44,7 +50,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     let mut fail_cnt = 0;
     loop {
-        let mut r = cloudflare::Record::new(Some(ip::get_ip_from_net()?), name.clone(), None);
+        let mut r =
+            cloudflare::Record::new(Some(ip::get_ip_from_net(&ip_type)?), name.clone(), None);
         println!("-------------------------");
         match r.run_checker() {
             Ok(_) => fail_cnt = 0,
