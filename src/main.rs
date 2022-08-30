@@ -9,6 +9,7 @@ struct Config {
     name: Option<String>,
     interval: Option<u64>,
     ip_type: Option<String>,
+    interface: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -25,24 +26,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut name = String::new();
     let mut ip_type = String::from("ipv4");
     let mut interval: u64 = 300;
+    let mut if_name = String::new();
     for x in config.ddns_config.unwrap() {
         name = x.name.unwrap();
         ip_type = x.ip_type.unwrap_or_else(|| ip_type);
         interval = x.interval.unwrap_or_else(|| interval);
+        if_name = x.interface.unwrap_or_else(|| if_name);
     }
-    let ip_api = String::from("ifconfig.me");
-    println!(
-        "###Hello, {}",
-        ip::get_ip_from_system(ip::IpFrom::Shell(ip_api))
-    );
-    println!(
-        "###Hello, {}",
-        ip::get_ip_from_system(ip::IpFrom::Manual(192, 168, 123, 106))
-    );
     let mut fail_cnt = 0;
     loop {
         let mut r =
-            cloudflare::Record::new(Some(ip::get_ip_from_net(&ip_type)?), name.clone(), None);
+            if !if_name.is_empty() { 
+                cloudflare::Record::new(Some(ip::get_ip_from_system(&if_name)?), name.clone(), None)
+            } else {
+                cloudflare::Record::new(Some(ip::get_ip_from_net(&ip_type)?), name.clone(), None)
+            };
         println!("-------------------------");
         match r.run_checker() {
             Ok(_) => fail_cnt = 0,

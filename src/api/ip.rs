@@ -1,24 +1,20 @@
 use std::collections::HashMap;
 use std::error;
-use std::net::{IpAddr, Ipv4Addr};
-use std::process::Command;
+use std::net::{IpAddr};
 use std::str::FromStr;
+use local_ip_address::list_afinet_netifas;
 
-pub enum IpFrom {
-    Shell(String),
-    Manual(u8, u8, u8, u8),
-}
+pub fn get_ip_from_system(if_name: &str) -> Result<IpAddr, Box<dyn error::Error>> {
+    let network_interfaces = list_afinet_netifas().unwrap();
 
-// TODO
-pub fn get_ip_from_system(from: IpFrom) -> IpAddr {
-    match from {
-        IpFrom::Manual(b, c, d, e) => IpAddr::V4(Ipv4Addr::new(b, c, d, e)),
-        IpFrom::Shell(s) => {
-            let output = Command::new("curl").arg(s).output().expect("run error");
-            let out = String::from_utf8(output.stdout).unwrap();
-            IpAddr::from_str(&out).unwrap()
+    for(name, ip) in network_interfaces.iter() {
+        println!("{}:\t{:?}", name, ip);
+        if name == if_name {
+            return Ok(*ip);
         }
     }
+
+    return Err("interface not found".into());
 }
 
 pub fn get_ip_from_net(ip_type: &String) -> Result<IpAddr, Box<dyn error::Error>> {
