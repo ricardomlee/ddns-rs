@@ -137,7 +137,6 @@ impl Record {
             Some(i) => Some(i.to_string()),
             None => None,
         };
-        println!("got record for {}, ip: {}", self.name, ip.unwrap());
         Ok(Record::new(ip, self.name.clone(), id))
     }
 }
