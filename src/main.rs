@@ -35,12 +35,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let mut fail_cnt = 0;
     loop {
-        let mut r =
-            if !if_name.is_empty() { 
-                cloudflare::Record::new(Some(ip::get_ip_from_system(&if_name)?), name.clone(), None)
-            } else {
-                cloudflare::Record::new(Some(ip::get_ip_from_net(&ip_type)?), name.clone(), None)
-            };
+        let mut r = if !if_name.is_empty() {
+            cloudflare::Record::new(
+                Some(ip::get_ip_from_system(&if_name, &ip_type)?),
+                name.clone(),
+                None,
+            )
+        } else {
+            cloudflare::Record::new(Some(ip::get_ip_from_net(&ip_type)?), name.clone(), None)
+        };
         println!("-------------------------");
         match r.run_checker() {
             Ok(_) => fail_cnt = 0,

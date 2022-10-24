@@ -1,24 +1,38 @@
+use local_ip_address::list_afinet_netifas;
 use std::collections::HashMap;
 use std::error;
-use std::net::{IpAddr};
+use std::net::IpAddr;
 use std::str::FromStr;
-use local_ip_address::list_afinet_netifas;
 
-pub fn get_ip_from_system(if_name: &str) -> Result<IpAddr, Box<dyn error::Error>> {
+pub fn get_ip_from_system(if_name: &str, ip_type: &str) -> Result<IpAddr, Box<dyn error::Error>> {
     let network_interfaces = list_afinet_netifas().unwrap();
-
-    for(name, ip) in network_interfaces.iter() {
-        println!("{}:\t{:?}", name, ip);
-        if name == if_name {
-            return Ok(*ip);
+    match ip_type {
+        "ipv4" => {
+            let mut iter = network_interfaces
+                .iter()
+                .filter(|x| x.0 == if_name && x.1.is_ipv4());
+            if let Some(inf) = iter.next() {
+                return Ok(inf.1);
+            } else {
+                return Err("ip not found".into());
+            }
         }
+        "ipv6" => {
+            let mut iter = network_interfaces
+                .iter()
+                .filter(|x| x.0 == if_name && x.1.is_ipv6());
+            if let Some(inf) = iter.next() {
+                return Ok(inf.1);
+            } else {
+                return Err("ip not found".into());
+            }
+        }
+        _ => return Err("invalid ip type".into()),
     }
-
-    return Err("interface not found".into());
 }
 
-pub fn get_ip_from_net(ip_type: &String) -> Result<IpAddr, Box<dyn error::Error>> {
-    match ip_type as &str {
+pub fn get_ip_from_net(ip_type: &str) -> Result<IpAddr, Box<dyn error::Error>> {
+    match ip_type {
         "ipv4" => {
             let resp = reqwest::blocking::get("https://httpbin.org/ip")?
                 .json::<HashMap<String, String>>()?;

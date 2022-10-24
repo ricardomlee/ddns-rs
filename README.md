@@ -12,7 +12,7 @@ A ddns client written in Rust.
     - name: String
     - interval: u64
     - ip_type: String
-    - interface(optional, v4): String
+    - interface(optional): String
 
 
 ## Install
@@ -25,7 +25,7 @@ cargo install --path .
 
 ## Usage
 
-update and copy `config/ddns.toml` to `/tmp/ddns.toml`
+copy `config/ddns.toml` to `/tmp/ddns.toml` and update
 
 ```shell
 export CF_ZONE=<your zone id>
@@ -35,17 +35,9 @@ ddns-rs
 
 
 ## TODO List
-
- - cache ip
- - multiple records
-    - multi-thread
-    - config iterator
-    - token/id for each
- - async functions
  - add dns vendors
     - aliddns
     - dnspod
- - encrypted token/id
 
 
 ## License
