@@ -35,6 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let mut fail_cnt = 0;
     loop {
+        #[cfg(feature = "interface")]
         let mut r = if !if_name.is_empty() {
             cloudflare::Record::new(
                 Some(ip::get_ip_from_system(&if_name, &ip_type)?),
@@ -44,6 +45,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             cloudflare::Record::new(Some(ip::get_ip_from_net(&ip_type)?), name.clone(), None)
         };
+        #[cfg(not(feature = "interface"))]
+        let mut r =
+            cloudflare::Record::new(Some(ip::get_ip_from_net(&ip_type)?), name.clone(), None);
         println!("-------------------------");
         match r.run_checker() {
             Ok(_) => fail_cnt = 0,
