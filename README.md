@@ -12,7 +12,7 @@ A ddns client written in Rust.
     - name: String
     - interval: u64
     - ip_type: String
-    - interface(optional): String
+    - interface: String # this requires "interface" feature
 
 
 ## Install

@@ -1,10 +1,11 @@
-use local_ip_address::list_afinet_netifas;
 use std::collections::HashMap;
 use std::error;
 use std::net::IpAddr;
 use std::str::FromStr;
 
+#[cfg(feature = "interface")]
 pub fn get_ip_from_system(if_name: &str, ip_type: &str) -> Result<IpAddr, Box<dyn error::Error>> {
+    use local_ip_address::list_afinet_netifas;
     let network_interfaces = list_afinet_netifas().unwrap();
     match ip_type {
         "ipv4" => {
