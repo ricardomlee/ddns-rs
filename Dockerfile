@@ -18,6 +18,6 @@ RUN apk add --no-cache libgcc
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/ddns-rs .
+COPY --from=0 /app/target/release/ddns-rs .
 
 CMD ["./ddns-rs"]
