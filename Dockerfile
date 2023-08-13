@@ -5,7 +5,7 @@ WORKDIR /app
 COPY Cargo.toml /app/
 COPY src /app/src
 
-RUN cargo build --release
+RUN cargo build --release --all-features
 
 FROM debian:bullseye-slim
 
