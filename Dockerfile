@@ -1,24 +1,16 @@
-FROM rust:alpine3.16
-
-ENV RUSTFLAGS="-C target-feature=-crt-static"
-
-RUN set -eux && sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
-RUN apk add --no-cache musl-dev pkgconfig openssl-dev
+FROM rust:latest as builder
 
 WORKDIR /app
 
-COPY . .
+COPY Cargo.toml Cargo.lock /app/
+COPY src /app/src
 
-RUN cargo build --release \ 
-    && strip -s target/release/ddns-rs
+RUN cargo build --release
 
-FROM alpine:latest
-
-RUN set -eux && sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
-RUN apk add --no-cache openssl
+FROM debian:bullseye-slim
 
 WORKDIR /app
 
-COPY --from=0 /app/target/release/ddns-rs .
+COPY --from=builder /app/target/release/ddns-rs /app/
 
 CMD ["./ddns-rs"]
